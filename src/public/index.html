@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Audio Transcription</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="video-background"></div>
+    <main class="container">
+        <header>
+            <h1>Vocalize AI</h1>
+            <p>Transform your audio into precise timestamps in seconds.</p>
+        </header>
+
+        <section class="upload-card glassmorphism">
+            <form id="uploadForm">
+                <div class="drop-zone" id="dropZone">
+                    <div class="drop-content">
+                        <svg class="upl-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                            </path>
+                        </svg>
+                        <span class="drop-title">Drag & Drop your audio</span>
+                        <span class="drop-sub">Supported: WAV, MP3, OGG, M4A (Max: 100MB)</span>
+                        <input type="file" id="audioFile" name="audio"
+                            accept=".mp3,.wav,.ogg,.m4a,audio/mpeg,audio/wav,audio/mp4,audio/ogg" hidden>
+                        <button type="button" class="browse-btn" id="browseBtn">Browse Files</button>
+                    </div>
+                    <div class="file-info hidden" id="fileInfo">
+                        <span class="file-name" id="fileName">...</span>
+                        <span class="file-size" id="fileSize">...</span>
+                        <button type="button" class="remove-btn" id="removeBtn">Remove</button>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <div class="input-group">
+                        <label for="languageSelect">Language</label>
+                        <select id="languageSelect" name="language">
+                            <option value="auto">Auto-Detect</option>
+                            <option value="en">English</option>
+                            <option value="es">Spanish</option>
+                            <option value="fr">French</option>
+                            <option value="de">German</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="submit-btn" id="submitBtn" disabled>
+                        <span>Transcribe</span>
+                        <svg class="loader hidden" id="loader" viewBox="0 0 50 50">
+                            <circle cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <section class="result-card glassmorphism hidden" id="resultCard">
+            <div class="result-header">
+                <h2>Transcription Result</h2>
+                <div class="tags">
+                    <span class="tag" id="metaLang">Auto</span>
+                    <span class="tag" id="metaChunks">1 Chunk</span>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="full">Full Text</button>
+                <button class="tab-btn" data-tab="timestamps">Timestamps</button>
+            </div>
+
+            <div class="tab-content">
+                <div class="content full active" id="fullText"></div>
+                <div class="content timestamps" id="timestampContent">
+                    <ul class="segment-list" id="segmentList"></ul>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="copy-btn" id="copyBtn">Copy Text</button>
+                <button class="reset-btn" id="resetBtn">New Transcription</button>
+            </div>
+        </section>
+
+        <!-- Error Toast -->
+        <div class="toast hidden" id="errorToast">
+            <span id="errorMsg">An error occurred.</span>
+            <button class="close-toast" id="closeToast">×</button>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

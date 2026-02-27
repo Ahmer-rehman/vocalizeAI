@@ -1,0 +1,9 @@
+node_modules/
+uploads/
+work/
+whisper.cpp/
+.DS_Store
+*.wav
+*.mp3
+*.ogg
+*.m4a
