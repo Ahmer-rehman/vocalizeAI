@@ -70,6 +70,203 @@ header p {
     font-size: 1.1rem;
 }
 
+/* Live Recording Card */
+.live-card {
+    margin-bottom: 2rem;
+}
+
+.live-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.live-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.live-header p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.live-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.live-language-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.live-language-selector label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.live-language-selector select {
+    padding: 0.75rem 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 12px;
+    outline: none;
+    font-size: 0.95rem;
+    appearance: none;
+    cursor: pointer;
+    min-width: 150px;
+}
+
+.record-btn {
+    padding: 1rem 2.5rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 200px;
+    justify-content: center;
+}
+
+.record-btn:hover:not(:disabled) {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+}
+
+.record-btn.recording {
+    background: #ef4444;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.record-btn.recording:hover {
+    background: #dc2626;
+}
+
+.mic-icon {
+    width: 24px;
+    height: 24px;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
+    }
+}
+
+.recording-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 9999px;
+}
+
+.recording-dot {
+    width: 12px;
+    height: 12px;
+    background: #ef4444;
+    border-radius: 50%;
+    animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.3;
+    }
+}
+
+.recording-time {
+    font-family: monospace;
+    font-size: 1rem;
+    color: #ef4444;
+    font-weight: 600;
+}
+
+.live-transcript {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+}
+
+.live-transcript-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.live-transcript-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.clear-transcript-btn {
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.clear-transcript-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--text);
+}
+
+.live-transcript-content {
+    max-height: 300px;
+    overflow-y: auto;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #cbd5e1;
+    white-space: pre-wrap;
+}
+
+.live-transcript-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.live-transcript-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.live-transcript-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.live-transcript-content .placeholder {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
 /* Upload Card */
 .upload-card {
     margin-bottom: 2rem;

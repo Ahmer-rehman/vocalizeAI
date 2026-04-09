@@ -17,6 +17,50 @@
             <p>Transform your audio into precise timestamps in seconds.</p>
         </header>
 
+        <!-- Live Recording Section -->
+        <section class="live-card glassmorphism" id="liveCard">
+            <div class="live-header">
+                <h2>🎙️ Live Recording</h2>
+                <p>Record audio directly from your microphone for real-time transcription</p>
+            </div>
+            
+            <div class="live-controls">
+                <div class="live-language-selector">
+                    <label for="liveLanguageSelect">Language</label>
+                    <select id="liveLanguageSelect" name="language">
+                        <option value="auto">Auto-Detect</option>
+                        <option value="en">English</option>
+                        <option value="ur">Urdu</option>
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                    </select>
+                </div>
+                
+                <button class="record-btn" id="recordBtn">
+                    <svg class="mic-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                    </svg>
+                    <span id="recordBtnText">Start Recording</span>
+                </button>
+                
+                <div class="recording-indicator hidden" id="recordingIndicator">
+                    <span class="recording-dot"></span>
+                    <span class="recording-time" id="recordingTime">00:00</span>
+                </div>
+            </div>
+
+            <div class="live-transcript hidden" id="liveTranscript">
+                <div class="live-transcript-header">
+                    <h3>Live Transcript</h3>
+                    <button class="clear-transcript-btn" id="clearTranscriptBtn">Clear</button>
+                </div>
+                <div class="live-transcript-content" id="liveTranscriptContent">
+                    <p class="placeholder">Start recording to see real-time transcription...</p>
+                </div>
+            </div>
+        </section>
+
         <section class="upload-card glassmorphism">
             <form id="uploadForm">
                 <div class="drop-zone" id="dropZone">
@@ -46,6 +90,7 @@
                         <select id="languageSelect" name="language">
                             <option value="auto">Auto-Detect</option>
                             <option value="en">English</option>
+                            <option value="ur">Urdu</option>
                             <option value="es">Spanish</option>
                             <option value="fr">French</option>
                             <option value="de">German</option>

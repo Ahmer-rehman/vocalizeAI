@@ -2,7 +2,8 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-const UPLOAD_DIR = path.join(__dirname, "..", "..", "uploads");
+// Use /tmp for Vercel serverless compatibility
+const UPLOAD_DIR = process.env.VERCEL ? "/tmp/uploads" : path.join(__dirname, "..", "..", "uploads");
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 function audioFileFilter(_req, file, cb) {

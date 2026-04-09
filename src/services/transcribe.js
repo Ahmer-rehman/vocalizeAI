@@ -2,7 +2,8 @@ const path = require("path");
 const fs = require("fs");
 const { spawn } = require("child_process");
 
-const WORK_DIR = path.join(__dirname, "..", "..", "work");
+// Use /tmp for Vercel serverless compatibility
+const WORK_DIR = process.env.VERCEL ? "/tmp/work" : path.join(__dirname, "..", "..", "work");
 fs.mkdirSync(WORK_DIR, { recursive: true });
 
 // Set these paths for your environment:
@@ -28,6 +29,12 @@ function run(cmd, args, opts = {}) {
 async function convertTo16kMonoWav(inputPath, outWavPath) {
     // Matches the whisper.cpp guidance for CLI use with 16-bit WAV.
     // Addresses: "How do you handle different audio formats?"
+    if (process.env.VERCEL) {
+        // Mock conversion for Vercel (FFmpeg not available)
+        console.warn("FFmpeg not available in Vercel, copying file instead");
+        fs.copyFileSync(inputPath, outWavPath);
+        return;
+    }
     await run("ffmpeg", [
         "-y",
         "-i", inputPath,
@@ -40,6 +47,10 @@ async function convertTo16kMonoWav(inputPath, outWavPath) {
 
 async function validateAudioMetadata(filePath) {
     // Validates metadata using ffprobe to catch corrupt or non-audio files early.
+    if (process.env.VERCEL) {
+        // Skip validation in Vercel (ffprobe not available)
+        return true;
+    }
     try {
         await run("ffprobe", [
             "-v", "error",
@@ -57,6 +68,10 @@ async function validateAudioMetadata(filePath) {
 }
 
 async function getAudioDuration(filePath) {
+    if (process.env.VERCEL) {
+        // Mock duration in Vercel (ffprobe not available)
+        return 30; // Assume 30 seconds for mock
+    }
     try {
         const { stdout } = await run("ffprobe", [
             "-v", "error",
@@ -71,6 +86,10 @@ async function getAudioDuration(filePath) {
 }
 
 async function getSilencePoints(filePath) {
+    if (process.env.VERCEL) {
+        // Mock silence detection in Vercel (FFmpeg not available)
+        return [];
+    }
     try {
         const p = spawn("ffmpeg", [
             "-i", filePath,
@@ -97,6 +116,11 @@ async function getSilencePoints(filePath) {
 
 async function chunkWavFile(inputWavPath, outDir, chunkPrefix, targetSegmentTime = 30) {
     // Addresses: "How do you deal with long audio files?" and splitting "based on silence"
+    
+    if (process.env.VERCEL) {
+        // Mock chunking in Vercel (FFmpeg not available)
+        return [{ path: inputWavPath, offset: 0 }];
+    }
 
     // 1. Get exact silences
     const duration = await getAudioDuration(inputWavPath);
@@ -203,21 +227,28 @@ function parseSrt(srtText, timeOffsetSecs = 0) {
 }
 
 async function transcribeToSrtSegments(wavPath, outBasePath, language = "auto", timeOffsetSecs = 0) {
-    try {
-        // Attempt actual whisper transcription
-        await run(WHISPER_CLI, [
-            "-m", WHISPER_MODEL,
-            "-f", wavPath,
-            "-osrt",
-            "-of", outBasePath,
-            "-l", language,
-            "-np",
-            "-ng" // Ignore buggy external GPUs
-        ]);
-    } catch (err) {
-        console.warn(`Whisper CLI failed or missing. Using mock segmentation for: ${wavPath}`);
-        const mockSrt = `1\n00:00:00,000 --> 00:00:05,000\nMock transcript for chunk at offset ${timeOffsetSecs}s.`;
+    if (process.env.VERCEL) {
+        // Mock transcription in Vercel (whisper.cpp not available)
+        console.warn("Whisper CLI not available in Vercel, using mock transcription");
+        const mockSrt = `1\n00:00:00,000 --> 00:00:05,000\nMock transcript for chunk at offset ${timeOffsetSecs}s (Vercel deployment - whisper.cpp not available in serverless).`;
         fs.writeFileSync(`${outBasePath}.srt`, mockSrt);
+    } else {
+        try {
+            // Attempt actual whisper transcription
+            await run(WHISPER_CLI, [
+                "-m", WHISPER_MODEL,
+                "-f", wavPath,
+                "-osrt",
+                "-of", outBasePath,
+                "-l", language,
+                "-np",
+                "-ng" // Ignore buggy external GPUs
+            ]);
+        } catch (err) {
+            console.warn(`Whisper CLI failed or missing. Using mock segmentation for: ${wavPath}`);
+            const mockSrt = `1\n00:00:00,000 --> 00:00:05,000\nMock transcript for chunk at offset ${timeOffsetSecs}s.`;
+            fs.writeFileSync(`${outBasePath}.srt`, mockSrt);
+        }
     }
 
     try {

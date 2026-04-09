@@ -7,3 +7,5 @@ whisper.cpp/
 *.mp3
 *.ogg
 *.m4a
+.vercel
+.env*.local

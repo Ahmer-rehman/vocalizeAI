@@ -23,7 +23,217 @@ const errorToast = document.getElementById('errorToast');
 const errorMsg = document.getElementById('errorMsg');
 const closeToast = document.getElementById('closeToast');
 
+// Live recording elements
+const recordBtn = document.getElementById('recordBtn');
+const recordBtnText = document.getElementById('recordBtnText');
+const recordingIndicator = document.getElementById('recordingIndicator');
+const recordingTime = document.getElementById('recordingTime');
+const liveTranscript = document.getElementById('liveTranscript');
+const liveTranscriptContent = document.getElementById('liveTranscriptContent');
+const clearTranscriptBtn = document.getElementById('clearTranscriptBtn');
+const liveLanguageSelect = document.getElementById('liveLanguageSelect');
+
 let currentFile = null;
+
+// Live recording state
+let isRecording = false;
+let recognition = null;
+let recordingStartTime = null;
+let recordingTimer = null;
+let liveTranscriptText = '';
+let currentLanguageIndex = 0;
+let languageOptions = [];
+
+// --- Live Recording Logic ---
+function initSpeechRecognition() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        showError('Speech recognition is not supported in your browser. Please use Chrome or Edge.');
+        recordBtn.disabled = true;
+        return null;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+        isRecording = true;
+        recordingStartTime = Date.now();
+        startRecordingTimer();
+    };
+
+    recognition.onresult = (event) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+                finalTranscript += transcript + ' ';
+            } else {
+                interimTranscript += transcript;
+            }
+        }
+
+        if (finalTranscript) {
+            liveTranscriptText += finalTranscript;
+            updateLiveTranscript();
+        }
+    };
+
+    recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        if (event.error === 'not-allowed') {
+            showError('Microphone access denied. Please allow microphone access to use live recording.');
+        } else if (event.error === 'service-not-allowed') {
+            // Try next language option if available
+            if (languageOptions.length > currentLanguageIndex + 1) {
+                currentLanguageIndex++;
+                console.log(`Trying alternative locale: ${languageOptions[currentLanguageIndex]}`);
+                recognition.lang = languageOptions[currentLanguageIndex];
+                try {
+                    recognition.start();
+                    return;
+                } catch (e) {
+                    console.error('Failed to restart with alternative locale:', e);
+                }
+            }
+            // If all options failed, fall back to English
+            if (languageOptions.length > 0 && languageOptions[0].startsWith('ur')) {
+                console.log('Urdu not supported, falling back to English');
+                recognition.lang = 'en-US';
+                try {
+                    recognition.start();
+                    showError('Urdu language not supported in your browser. Using English instead.');
+                    return;
+                } catch (e) {
+                    console.error('Failed to fallback to English:', e);
+                }
+            }
+            showError('Speech recognition service not available for this language. Please try English.');
+        } else if (event.error === 'no-speech') {
+            // Ignore no-speech errors
+            return;
+        } else {
+            showError(`Speech recognition error: ${event.error}`);
+        }
+        stopRecording();
+    };
+
+    recognition.onend = () => {
+        if (isRecording) {
+            // Restart if still supposed to be recording
+            recognition.start();
+        }
+    };
+
+    return recognition;
+}
+
+function startRecording() {
+    if (!recognition) {
+        recognition = initSpeechRecognition();
+        if (!recognition) return;
+    }
+
+    const selectedLanguage = liveLanguageSelect.value;
+    // Map language codes to proper locale codes for Web Speech API
+    const languageMap = {
+        'auto': ['en-US'],
+        'en': ['en-US'],
+        'ur': ['ur-PK', 'ur-IN', 'ur'],  // Try multiple Urdu locales
+        'es': ['es-ES'],
+        'fr': ['fr-FR'],
+        'de': ['de-DE']
+    };
+    
+    languageOptions = languageMap[selectedLanguage] || ['en-US'];
+    currentLanguageIndex = 0;
+    
+    recognition.lang = languageOptions[0];
+
+    try {
+        recognition.start();
+        recordBtn.classList.add('recording');
+        recordBtnText.textContent = 'Stop Recording';
+        recordingIndicator.classList.remove('hidden');
+        liveTranscript.classList.remove('hidden');
+        liveTranscriptContent.innerHTML = '<p class="placeholder">Listening... Speak now.</p>';
+    } catch (error) {
+        console.error('Failed to start recognition:', error);
+        showError('Failed to start recording. Please try again.');
+    }
+}
+
+function stopRecording() {
+    if (recognition) {
+        recognition.stop();
+    }
+    isRecording = false;
+    stopRecordingTimer();
+    recordBtn.classList.remove('recording');
+    recordBtnText.textContent = 'Start Recording';
+    recordingIndicator.classList.add('hidden');
+    
+    if (liveTranscriptText.trim()) {
+        liveTranscriptContent.innerHTML = liveTranscriptText;
+    } else {
+        liveTranscriptContent.innerHTML = '<p class="placeholder">No speech detected. Try again.</p>';
+    }
+}
+
+function updateLiveTranscript() {
+    if (liveTranscriptText.trim()) {
+        liveTranscriptContent.textContent = liveTranscriptText;
+        // Auto-scroll to bottom
+        liveTranscriptContent.scrollTop = liveTranscriptContent.scrollHeight;
+    }
+}
+
+function startRecordingTimer() {
+    recordingStartTime = Date.now();
+    updateRecordingTime();
+    recordingTimer = setInterval(updateRecordingTime, 1000);
+}
+
+function stopRecordingTimer() {
+    if (recordingTimer) {
+        clearInterval(recordingTimer);
+        recordingTimer = null;
+    }
+}
+
+function updateRecordingTime() {
+    if (!recordingStartTime) return;
+    const elapsed = Date.now() - recordingStartTime;
+    const seconds = Math.floor(elapsed / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    recordingTime.textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+function clearLiveTranscript() {
+    liveTranscriptText = '';
+    liveTranscriptContent.innerHTML = '<p class="placeholder">Start recording to see real-time transcription...</p>';
+}
+
+// Event listeners for live recording
+recordBtn.addEventListener('click', () => {
+    if (isRecording) {
+        stopRecording();
+    } else {
+        startRecording();
+    }
+});
+
+clearTranscriptBtn.addEventListener('click', clearLiveTranscript);
+
+// Initialize speech recognition on page load
+document.addEventListener('DOMContentLoaded', () => {
+    initSpeechRecognition();
+});
 
 // --- Drag & Drop Logic ---
 ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
